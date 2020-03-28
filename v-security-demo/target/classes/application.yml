@@ -1,0 +1,16 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://vdb.cn:3306/vsdb?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false
+    username: root
+    password: root
+  session:
+    store-type: none
+  redis:
+    host: 192.168.64.33
+    port: 6379
+    # password:
+
+security:
+  basic:
+    enabled: false
