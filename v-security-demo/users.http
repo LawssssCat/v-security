@@ -1,0 +1,24 @@
+###
+
+# 故意把请求id写错
+GET http://{{host}}/user/a
+Content-Type: application/json
+
+###
+GET http://{{host}}/user/a
+Content-Type: application/json
+Accept: text/html,*/*;
+
+###
+
+GET http://{{host}}/filter?id=1
+
+# 或者
+###
+POST  http://{{host}}/filter
+Content-Type:application/x-www-form-urlencoded
+
+id=1
+
+###
+

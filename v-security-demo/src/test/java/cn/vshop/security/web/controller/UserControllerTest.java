@@ -13,14 +13,17 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.LinkedList;
 
 /**
  * '@RunWith' 一个注解，能用来指定用什么运行器，来运行测试
@@ -185,8 +188,34 @@ public class UserControllerTest {
     @Test
     public void whenDeleteSuccess() throws Exception {
         mockMvc.perform(delete("/user/1").contentType(MediaType.APPLICATION_JSON_UTF8))
-                .andExpect(status().isOk()) ;
+                .andExpect(status().isOk());
 
         // 后面重构，controller返回自定义json类时，再判断返回状态
     }
+
+    /**
+     * 上传文件
+     * 调用 /file 成功
+     */
+    @Test
+    public void whenUploadSuccess() throws Exception {
+        // 模拟一个上传的文件
+        MockMultipartFile file = new MockMultipartFile(
+                // 文件上传的名字
+                "file",
+                // 文件在客户端的名字
+                "test.txt",
+                // 请求体类型
+                "multipart/form-data",
+                // 文件内容(字节码形式)
+                "hello upload".getBytes("UTF-8")
+        );
+        mockMvc.perform(fileUpload("/file")
+                // 设置要上传的文件
+                .file(file))
+                .andExpect(status().isOk());
+    }
+
 }
+
+

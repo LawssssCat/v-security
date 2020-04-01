@@ -74,7 +74,8 @@ public class UserController {
             // (如果直接用 Integer id 接收, 需要进行mvc的异常处理，没必要)
             "/{id:\\d+}"
     )
-    public User getInfo(@PathVariable("id") String id) {
+    public User getInfo(@PathVariable("id") String id ) {
+
         User user = new User();
         user.setId(id);
         user.setUsername("boo");
@@ -109,9 +110,7 @@ public class UserController {
     public User updateUser(@Valid @RequestBody User user, BindingResult errors) {
 
         if (errors.hasErrors()) {
-            errors.getAllErrors().forEach(e -> {
-                log.error(e.getDefaultMessage());
-            });
+            errors.getAllErrors().forEach(e -> log.error(e.getDefaultMessage()));
         }
 
         log.info(ReflectionToStringBuilder.toString(user, ToStringStyle.MULTI_LINE_STYLE));

@@ -1,4 +1,4 @@
-package cn.vshop.security.ex;
+package cn.vshop.security.exception;
 
 /**
  * @author alan smith

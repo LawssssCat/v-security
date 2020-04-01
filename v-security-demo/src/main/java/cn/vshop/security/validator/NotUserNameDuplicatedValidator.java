@@ -70,6 +70,6 @@ public class NotUserNameDuplicatedValidator implements ConstraintValidator<NotUs
             // name 为空 或者其他错误
             // return false ;
         }
-        return false;
+        return true;
     }
 }
