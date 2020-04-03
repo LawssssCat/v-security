@@ -3,6 +3,8 @@ package cn.vshop.security.web.controller;
 import cn.vshop.security.dto.User;
 import cn.vshop.security.dto.UserQueryCondition;
 import com.fasterxml.jackson.annotation.JsonView;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -35,6 +37,7 @@ public class UserController {
      */
     @JsonView(User.UserSimpleView.class)
     @GetMapping
+    @ApiOperation(value = "用户查询服务")
     public List<User> query(
             UserQueryCondition uqc,
             /*
@@ -74,7 +77,7 @@ public class UserController {
             // (如果直接用 Integer id 接收, 需要进行mvc的异常处理，没必要)
             "/{id:\\d+}"
     )
-    public User getInfo(@PathVariable("id") String id ) {
+    public User getInfo(@PathVariable("id") String id) {
 
         User user = new User();
         user.setId(id);
@@ -122,7 +125,7 @@ public class UserController {
      * 模拟数据库删除用户
      */
     @DeleteMapping("/{id:\\d+}")
-    public void delete(@PathVariable("id") String id) {
+    public void delete(@ApiParam("用户id") @PathVariable("id") String id) {
         log.info(id);
     }
 }

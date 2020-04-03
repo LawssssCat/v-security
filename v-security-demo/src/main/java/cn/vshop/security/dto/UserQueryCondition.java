@@ -1,5 +1,6 @@
 package cn.vshop.security.dto;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
 /**
@@ -11,6 +12,8 @@ import lombok.Data;
  */
 @Data
 public class UserQueryCondition {
+    @ApiModelProperty(value = "用户名称")
     private String username;
+    @ApiModelProperty(value = "用户年龄")
     private Integer age;
 }
