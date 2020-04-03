@@ -34,10 +34,6 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
 
         <!--swagger2 核心程序，生成文档数据-->
         <!-- https://mvnrepository.com/artifact/io.springfox/springfox-swagger2 -->

@@ -12,6 +12,7 @@
     <artifactId>v-security-browser</artifactId>
 
     <dependencies>
+        <!--核心业务-->
         <dependency>
             <groupId>cn.vshop.security</groupId>
             <artifactId>v-security-core</artifactId>
@@ -26,6 +27,12 @@
         <dependency>
             <groupId>org.springframework.session</groupId>
             <artifactId>spring-session</artifactId>
+        </dependency>
+
+        <!--简化代码-->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
         </dependency>
     </dependencies>
 

@@ -14,4 +14,3 @@ spring:
 security:
   basic:
     enabled: true
-  us
