@@ -1,0 +1,28 @@
+POST http://{{host}}/file
+Content-Type: multipart/form-data; boundary=WebAppBoundary
+
+--WebAppBoundary
+Content-Disposition: form-data; name="file"; filename="file.txt"
+
+hello world!
+--WebAppBoundary--
+
+> {%
+  // 文件路径 如 F:\\environment\\java\\workspace\\v-security\\v-security-demo\\target\\classes\\cn\\vshop\\security\\web\\controller\\3b48c253-a29c-4d33-aafd-9cd27cb6e806.txt
+  var p = response.body.path ;
+  // 解析出文件名 3b48c253-a29c-4d33-aafd-9cd27cb6e806.txt
+  var id = p.substring(p.lastIndexOf("\\")+1);
+  // 设为全局变量，让下面的请求使用
+  client.global.set("id", id) ;
+  // 控制台打印(方便测试)
+  client.log(id)
+ %}
+
+###
+# 这里的id是上面定义好的全局变量
+GET http://{{host}}/file/{{id}}
+
+###
+
+
+
