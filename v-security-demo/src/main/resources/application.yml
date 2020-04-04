@@ -14,3 +14,9 @@ spring:
 security:
   basic:
     enabled: true
+
+v:
+  security:
+    browser:
+      # 登录页面
+      loginPage: /login2.html

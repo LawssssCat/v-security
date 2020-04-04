@@ -1,5 +1,7 @@
 package cn.vshop.security.browser;
 
+import cn.vshop.security.core.properties.SecurityProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,17 +19,28 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Autowired
+    private SecurityProperties securityProperties ;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
         // 指定身份认证方式为表单
         http.formLogin()
+                // 自定义登录页面
+                .loginPage("/authentication/require")
+                // 执行登录的URL
+                .loginProcessingUrl("/authentication/form")
                 .and()
                 // 并且认证请求
                 .authorizeRequests()
+                // 设置，当访问到登录页面时，允许所有
+                .antMatchers("/authentication/require" , securityProperties.getBrowser().getLoginPage()).permitAll()
                 // 全部请求，都需要认证
-                .anyRequest().authenticated();
-
+                .anyRequest().authenticated()
+                .and()
+                // 关闭 csrf 防护
+                .csrf().disable();
     }
 
     @Bean
