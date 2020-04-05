@@ -16,6 +16,11 @@ import lombok.Setter;
 public class BrowserProperties {
 
     /**
+     * 记住我的生效时间
+     */
+    private int rememberMeSeconds = 3600;
+
+    /**
      * 自定义登录成功后的行为
      */
     private LoginType loginType = LoginType.JSON;

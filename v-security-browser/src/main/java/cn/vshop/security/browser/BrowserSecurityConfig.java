@@ -9,16 +9,21 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletException;
+import javax.sql.DataSource;
 
 /**
+ * WebSecurityConfigurerAdapter:
  * spring security 提供的 web 应用适配器
  * 可以重写configure方法，实现自定义配置
  *
@@ -39,6 +44,26 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private SecurityProperties securityProperties;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    @Autowired
+    private DataSource dataSource;
+
+    /**
+     * @return RememberMe 功能的 Repository
+     */
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository() {
+        // 连接数据库的实现类，还有一个实现类时存内存的InMemoryTokenRepositoryImpl
+        JdbcTokenRepositoryImpl tokenRepository = new JdbcTokenRepositoryImpl();
+        // 配置数据源
+        tokenRepository.setDataSource(dataSource);
+        // 在启动数据库时创建存储token的表
+        // tokenRepository.setCreateTableOnStartup(true);
+        return tokenRepository;
+    }
 
     /**
      * @return 验证码校验过滤器
@@ -69,6 +94,12 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
                 .successHandler(authenticationSuccessHandler)
                 // 自定义失败处理器
                 .failureHandler(authenticationFailureHandler)
+                .and()
+                // 记住我配置
+                .rememberMe()
+                .tokenRepository(persistentTokenRepository())
+                .tokenValiditySeconds(securityProperties.getBrowser().getRememberMeSeconds())
+                .userDetailsService(userDetailsService)
                 .and()
                 // 并且认证请求
                 .authorizeRequests()

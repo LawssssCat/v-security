@@ -26,5 +26,5 @@ v:
         length: 6
         # 指定要进行验证码验证的url
         urls:
-        - /user
-        - /user/*
+        # - /user
+        # - /user/*
