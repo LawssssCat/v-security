@@ -17,4 +17,7 @@ public class SecurityProperties {
     // 这里读取的是 v.security.browser 配置项
     private BrowserProperties browser = new BrowserProperties();
 
+    // 这里读取的是 v.security.code 配置项
+    private ValidateCodeProperties code = new ValidateCodeProperties();
+
 }

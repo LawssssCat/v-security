@@ -21,3 +21,10 @@ v:
       # 登录页面
       loginPage: /login2.html
       loginType: JSON
+    code:
+      image:
+        length: 6
+        # 指定要进行验证码验证的url
+        urls:
+        - /user
+        - /user/*

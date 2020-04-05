@@ -16,6 +16,7 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import javax.servlet.Filter;
+import javax.servlet.ServletException;
 
 /**
  * spring security 提供的 web 应用适配器
@@ -42,9 +43,14 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * @return 验证码校验过滤器
      */
-    public Filter getValidaCodeFilter() {
+    public Filter getValidaCodeFilter() throws ServletException {
         ValidateCodeFilter filter = new ValidateCodeFilter();
+        // 设置失败处理器
         filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        // 注入配置属性
+        filter.setSecurityProperties(securityProperties);
+        // 初始化
+        filter.afterPropertiesSet();
         return filter;
     }
 
