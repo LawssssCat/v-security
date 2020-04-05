@@ -1,8 +1,10 @@
 package cn.vshop.security.browser;
 
 import cn.vshop.security.core.properties.SecurityProperties;
+import cn.vshop.security.core.validate.code.ValidateCodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -11,6 +13,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.Filter;
 
 /**
  * spring security 提供的 web 应用适配器
@@ -34,11 +39,22 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private SecurityProperties securityProperties;
 
+    /**
+     * @return 验证码校验过滤器
+     */
+    public Filter getValidaCodeFilter() {
+        ValidateCodeFilter filter = new ValidateCodeFilter();
+        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        return filter;
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-
-        // 指定身份认证方式为表单
-        http.formLogin()
+        http
+                // 把验证码验证过滤器放在用户名密码过滤器前
+                .addFilterBefore(getValidaCodeFilter(), UsernamePasswordAuthenticationFilter.class)
+                // 指定身份认证方式为表单
+                .formLogin()
                 // 自定义登录页面
                 .loginPage("/authentication/require")
                 // 执行登录的URL
@@ -51,7 +67,11 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
                 // 并且认证请求
                 .authorizeRequests()
                 // 设置，当访问到登录页面时，允许所有
-                .antMatchers("/authentication/require", securityProperties.getBrowser().getLoginPage()).permitAll()
+                .antMatchers(
+                        "/authentication/require",
+                        securityProperties.getBrowser().getLoginPage(),
+                        "/code/image"
+                ).permitAll()
                 // 全部请求，都需要认证
                 .anyRequest().authenticated()
                 .and()

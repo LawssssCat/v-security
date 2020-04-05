@@ -1,5 +1,6 @@
 package cn.vshop.security.browser.authentication;
 
+import cn.vshop.security.browser.support.SimpleResponse;
 import cn.vshop.security.core.properties.LoginType;
 import cn.vshop.security.core.properties.SecurityProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +50,7 @@ public class MyAuthenticationFailureHandler
             // 响应头
             response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
             // 相应的，我们这里返回异常的json信息
-            response.getWriter().write(objectMapper.writeValueAsString(exception));
+            response.getWriter().write(objectMapper.writeValueAsString(new SimpleResponse(exception.getMessage())));
 
         } else {
             super.onAuthenticationFailure(request, response, exception);

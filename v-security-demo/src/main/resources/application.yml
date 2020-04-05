@@ -20,4 +20,4 @@ v:
     browser:
       # 登录页面
       loginPage: /login2.html
-      loginType: REDIRECT
+      loginType: JSON
