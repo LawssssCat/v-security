@@ -86,7 +86,7 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(getValidaCodeFilter(), UsernamePasswordAuthenticationFilter.class)
                 // 指定身份认证方式为表单
                 .formLogin()
-                // 自定义登录页面
+                // 自定义转跳接口，当发现未登录，会转跳到此
                 .loginPage("/authentication/require")
                 // 执行登录的URL
                 .loginProcessingUrl("/authentication/form")
@@ -105,10 +105,11 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 // 设置，当访问到登录页面时，允许所有
                 .antMatchers(
+                        // 自定义转跳接口，当发现未登录，会转跳到此
                         "/authentication/require",
+                        // 登录表单页。自定义转跳接口发现配置为REDIRECT时，也会转跳至此
                         securityProperties.getBrowser().getLoginPage(),
-                        "/code/image",
-                        "/code/email"
+                        "/code/*"
                 ).permitAll()
                 // 全部请求，都需要认证
                 .anyRequest().authenticated()

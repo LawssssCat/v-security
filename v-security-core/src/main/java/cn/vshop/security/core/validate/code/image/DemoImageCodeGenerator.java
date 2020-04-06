@@ -2,13 +2,10 @@ package cn.vshop.security.core.validate.code.image;
 
 import cn.vshop.security.core.properties.SecurityProperties;
 import cn.vshop.security.core.validate.code.ValidateCodeGenerator;
-import cn.vshop.security.core.validate.code.image.ImageCode;
-import cn.vshop.security.core.validate.code.image.ImageCodeGenerator;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import javax.servlet.http.HttpServletRequest;
+import org.springframework.web.context.request.ServletWebRequest;
 
 /**
  * @author alan smith
@@ -32,7 +29,7 @@ public class DemoImageCodeGenerator implements ValidateCodeGenerator, Initializi
     }
 
     @Override
-    public ImageCode generate(HttpServletRequest request) {
+    public ImageCode generate(ServletWebRequest request) {
         System.out.println("更高级的图形验证码生成代码");
         return imageCodeGenerator.generate(request);
     }

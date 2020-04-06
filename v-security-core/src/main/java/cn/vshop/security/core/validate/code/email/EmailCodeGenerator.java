@@ -4,8 +4,8 @@ import cn.vshop.security.core.properties.SecurityProperties;
 import cn.vshop.security.core.validate.code.ValidateCode;
 import cn.vshop.security.core.validate.code.ValidateCodeGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.context.request.ServletWebRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Random;
 
 /**
@@ -19,7 +19,7 @@ public class EmailCodeGenerator implements ValidateCodeGenerator {
     private SecurityProperties securityProperties;
 
     @Override
-    public ValidateCode generate(HttpServletRequest request) {
+    public ValidateCode generate(ServletWebRequest request) {
         return new ValidateCode(getCode(), securityProperties.getCode().getEmail().getExpireIn());
     }
 

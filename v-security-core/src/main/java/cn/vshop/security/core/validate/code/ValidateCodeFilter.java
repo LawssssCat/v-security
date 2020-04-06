@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static com.mysql.jdbc.interceptors.SessionAssociationInterceptor.getSessionKey;
+
 /**
  * 图形校验码的过滤器
  *
@@ -81,7 +83,6 @@ public class ValidateCodeFilter
             }
         }
 
-
         // 如果请求的是执行登录URL
         if (action) {
             // 尝试校验
@@ -107,7 +108,7 @@ public class ValidateCodeFilter
     private void validate(ServletWebRequest request) throws ServletRequestBindingException {
 
         // 从session中获取封装好的ImageCode
-        ImageCode codeInSession = (ImageCode) sessionStrategy.getAttribute(request, ValidateCodeController.IMAGE_SESSION_KEY);
+        ImageCode codeInSession = (ImageCode) sessionStrategy.getAttribute(request, getCodeSessionKey());
         // 从request中获取请求参数imageCode
         String codeInRequest = ServletRequestUtils.getStringParameter(request.getRequest(), "imageCode");
         if (StringUtils.isBlank(codeInRequest)) {
@@ -118,14 +119,22 @@ public class ValidateCodeFilter
         }
         if (codeInSession.isExpired()) {
             // 如果过期了，就移除验证码
-            sessionStrategy.removeAttribute(request, ValidateCodeController.IMAGE_SESSION_KEY);
+            sessionStrategy.removeAttribute(request, getCodeSessionKey());
             // 然后再抛异常
             throw new ValidateCodeException("验证码已过期");
         }
         if (!StringUtils.equals(codeInSession.getCode(), codeInRequest)) {
             throw new ValidateCodeException("验证码不匹配");
         }
-        sessionStrategy.removeAttribute(request, ValidateCodeController.IMAGE_SESSION_KEY);
+        sessionStrategy.removeAttribute(request, getCodeSessionKey());
+    }
+
+    /**
+     * 获取校验码存储在session中的key
+     * @return
+     */
+    private String getCodeSessionKey() {
+        return ValidateCodeProcessor.SESSION_KEY_PREFIX + "IMAGE";
     }
 
 }

@@ -2,12 +2,11 @@ package cn.vshop.security.core.validate.code.image;
 
 import cn.vshop.security.core.properties.SecurityProperties;
 import cn.vshop.security.core.validate.code.ValidateCodeGenerator;
-import cn.vshop.security.core.validate.code.image.ImageCode;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.ServletRequestUtils;
+import org.springframework.web.context.request.ServletWebRequest;
 
-import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.Random;
@@ -26,16 +25,16 @@ public class ImageCodeGenerator implements ValidateCodeGenerator {
     private Random random = new Random();
 
     @Override
-    public ImageCode generate(HttpServletRequest request) {
+    public ImageCode generate(ServletWebRequest request) {
         // 验证码图片宽度
         // 借助工具类，中request中获取
         int width = ServletRequestUtils.getIntParameter(
                 // 从请求中分析width参数，从而获取width值
-                request, "width",
+                request.getRequest(), "width",
                 // 如果请求中没有值，就从配置中获取
                 securityProperties.getCode().getImage().getWidth());
         int height = ServletRequestUtils.getIntParameter(
-                request, "height",
+                request.getRequest(), "height",
                 securityProperties.getCode().getImage().getHeight());
         // 验证码长度
         int length = securityProperties.getCode().getImage().getLength();

@@ -53,8 +53,9 @@ public class DefaultEmailCodeSender implements EmailCodeSender {
         StringBuilder sb = new StringBuilder();
         sb.append("您的验证码:");
         sb.append(code);
-        sb.append(",有效时效:");
+        sb.append(",有效时间:");
         sb.append(expireIn);
+        sb.append("秒。");
         return sb.toString();
     }
 
