@@ -1,6 +1,7 @@
 package cn.vshop.security.core.validate.code;
 
 import cn.vshop.security.core.properties.SecurityProperties;
+import cn.vshop.security.core.validate.code.image.ImageCode;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -106,7 +107,7 @@ public class ValidateCodeFilter
     private void validate(ServletWebRequest request) throws ServletRequestBindingException {
 
         // 从session中获取封装好的ImageCode
-        ImageCode codeInSession = (ImageCode) sessionStrategy.getAttribute(request, ValidateCodeController.SESSION_KEY);
+        ImageCode codeInSession = (ImageCode) sessionStrategy.getAttribute(request, ValidateCodeController.IMAGE_SESSION_KEY);
         // 从request中获取请求参数imageCode
         String codeInRequest = ServletRequestUtils.getStringParameter(request.getRequest(), "imageCode");
         if (StringUtils.isBlank(codeInRequest)) {
@@ -117,14 +118,14 @@ public class ValidateCodeFilter
         }
         if (codeInSession.isExpired()) {
             // 如果过期了，就移除验证码
-            sessionStrategy.removeAttribute(request, ValidateCodeController.SESSION_KEY);
+            sessionStrategy.removeAttribute(request, ValidateCodeController.IMAGE_SESSION_KEY);
             // 然后再抛异常
             throw new ValidateCodeException("验证码已过期");
         }
         if (!StringUtils.equals(codeInSession.getCode(), codeInRequest)) {
             throw new ValidateCodeException("验证码不匹配");
         }
-        sessionStrategy.removeAttribute(request, ValidateCodeController.SESSION_KEY);
+        sessionStrategy.removeAttribute(request, ValidateCodeController.IMAGE_SESSION_KEY);
     }
 
 }

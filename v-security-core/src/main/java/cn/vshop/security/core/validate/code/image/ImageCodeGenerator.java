@@ -1,6 +1,8 @@
-package cn.vshop.security.core.validate.code;
+package cn.vshop.security.core.validate.code.image;
 
 import cn.vshop.security.core.properties.SecurityProperties;
+import cn.vshop.security.core.validate.code.ValidateCodeGenerator;
+import cn.vshop.security.core.validate.code.image.ImageCode;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.ServletRequestUtils;
@@ -24,7 +26,7 @@ public class ImageCodeGenerator implements ValidateCodeGenerator {
     private Random random = new Random();
 
     @Override
-    public ImageCode createImageCode(HttpServletRequest request) {
+    public ImageCode generate(HttpServletRequest request) {
         // 验证码图片宽度
         // 借助工具类，中request中获取
         int width = ServletRequestUtils.getIntParameter(

@@ -8,6 +8,8 @@ import java.awt.image.BufferedImage;
 import java.time.LocalDateTime;
 
 /**
+ * 普通验证码
+ *
  * @author alan smith
  * @version 1.0
  * @date 2020/4/5 1:17
@@ -15,12 +17,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ImageCode {
-
-    /**
-     * 图片，展示给用户看的
-     */
-    private BufferedImage image;
+public class ValidateCode {
 
     /**
      * 随机数，需要存在session中，作为验证的依据
@@ -38,12 +35,10 @@ public class ImageCode {
     /**
      * 构造函数
      *
-     * @param image    图片
      * @param code     验证码
      * @param expireIn 期望多长时间后过期（seconds）
      */
-    public ImageCode(BufferedImage image, String code, int expireIn) {
-        this.image = image;
+    public ValidateCode(String code, int expireIn) {
         this.code = code;
         this.expireTime = LocalDateTime.now().plusSeconds(expireIn);
     }

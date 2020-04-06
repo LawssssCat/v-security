@@ -19,4 +19,6 @@ public class ValidateCodeProperties {
 
     private ImageCodeProperties image = new ImageCodeProperties();
 
+    private EmailCodeProperties email = new EmailCodeProperties();
+
 }

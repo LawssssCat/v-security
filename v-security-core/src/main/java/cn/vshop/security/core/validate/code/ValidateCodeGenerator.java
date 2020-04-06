@@ -11,10 +11,10 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface ValidateCodeGenerator {
     /**
-     * 生成验证码图片的逻辑代码
+     * 生成验证码逻辑代码
      *
      * @param request 请求
-     * @return 将验证码图片封装为 ImageCode 返回
+     * @return 封装的验证码
      */
-    ImageCode createImageCode(HttpServletRequest request);
+    ValidateCode generate(HttpServletRequest request);
 }

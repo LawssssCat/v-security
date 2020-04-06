@@ -12,6 +12,12 @@
     <artifactId>v-security-core</artifactId>
 
     <dependencies>
+        <!--发送邮件:实现邮箱验证码-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+        </dependency>
+
         <!--作为验证服务包含了security 和 oauth2-->
         <dependency>
             <groupId>org.springframework.cloud</groupId>

@@ -1,15 +1,30 @@
 spring:
+  profiles:
+    active: dev
   datasource:
     driver-class-name: com.mysql.jdbc.Driver
     url: jdbc:mysql://vdb.cn:3306/vsdb?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false
-    username: root
-    password: root
+    username: xxxxxxxx
+    password: xxxxxxxx
   session:
     store-type: none
   redis:
-    host: 192.168.64.33
+    host: xxxxxx
     port: 6379
     # password:
+  mail:
+    # 设置邮箱主机
+    host: xxxxxxxx
+    # 非SSL的端口
+    port: 25
+    # 默认即为smtp
+    protocol: xxxxxxx
+    # 设置用户名
+    username: xxxxxxxx
+    # 设置密码，该处的密码是QQ邮箱开启SMTP的授权码而非登录密码
+    password: xxxxxxxx
+    # 默认即为utf8
+    default-encoding: utf-8
 
 security:
   basic:
@@ -19,7 +34,7 @@ v:
   security:
     browser:
       # 登录页面
-      loginPage: /login2.html
+      loginPage: /login3.html
       loginType: JSON
     code:
       image:
@@ -28,3 +43,4 @@ v:
         urls:
         # - /user
         # - /user/*
+
