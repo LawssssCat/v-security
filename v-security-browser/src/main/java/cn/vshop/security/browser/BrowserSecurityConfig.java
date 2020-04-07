@@ -1,38 +1,53 @@
 package cn.vshop.security.browser;
 
+import cn.vshop.security.core.authentication.email.EmailCodeAuthenticationSecurityConfig;
 import cn.vshop.security.core.properties.SecurityProperties;
-import cn.vshop.security.core.validate.code.ValidateCodeFilter;
+import cn.vshop.security.core.validate.code.email.EmailCodeFilter;
+import cn.vshop.security.core.validate.code.image.ImageCodeFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.web.filter.DelegatingFilterProxy;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletException;
 import javax.sql.DataSource;
 
 /**
- * WebSecurityConfigurerAdapter:
- * spring security 提供的 web 应用适配器
- * 可以重写configure方法，实现自定义配置
+ * {@link WebSecurityConfigurerAdapter}:
+ * spring security 提供的 {@link WebSecurity} 适配器
+ * 一个帮我们实现了大部分{@link WebSecurityConfigurer}接口的抽象类
+ * <p>
+ * 提供了可以重写的configure方法，在方法内可以装配自定义的Filter配置
+ * 其指定的Filter会被生产为{@link FilterChainProxy}
+ * 最终以{@link DelegatingFilterProxy}作为spring Security Filter Chain起作用
+ * <p>
+ * 即：其实现是用来配置spring Security Filter Chain的
  *
  * @author alan smith
  * @version 1.0
  * @date 2020/4/3 12:15
  */
 @Configuration
-public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
+public class BrowserSecurityConfig
+        extends WebSecurityConfigurerAdapter {
+
+    @Autowired
+    private EmailCodeAuthenticationSecurityConfig emailCodeAuthenticationSecurityConfig;
 
     @Autowired
     @Qualifier("myAuthenticationSuccessHandler")
@@ -46,10 +61,11 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
     private SecurityProperties securityProperties;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private DataSource dataSource;
 
     @Autowired
-    private DataSource dataSource;
+    @Qualifier("usernameUserDetailsService")
+    private UserDetailsService userDetailsService;
 
     /**
      * @return RememberMe 功能的 Repository
@@ -68,8 +84,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
     /**
      * @return 验证码校验过滤器
      */
-    public Filter getValidaCodeFilter() throws ServletException {
-        ValidateCodeFilter filter = new ValidateCodeFilter();
+    public Filter getImageCodeFilter() throws ServletException {
+        ImageCodeFilter filter = new ImageCodeFilter();
         // 设置失败处理器
         filter.setAuthenticationFailureHandler(authenticationFailureHandler);
         // 注入配置属性
@@ -79,11 +95,21 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
         return filter;
     }
 
+    public Filter getEmailCodeFilter() throws ServletException {
+        EmailCodeFilter filter = new EmailCodeFilter();
+        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        filter.setSecurityProperties(securityProperties);
+        filter.afterPropertiesSet();
+        return filter;
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                // 把验证码验证过滤器放在用户名密码过滤器前
-                .addFilterBefore(getValidaCodeFilter(), UsernamePasswordAuthenticationFilter.class)
+                // 把邮箱验证码过滤器放在用户名密码过滤器前
+                .addFilterBefore(getEmailCodeFilter(), UsernamePasswordAuthenticationFilter.class)
+                // 把图形验证码验证过滤器放在用户名密码过滤器前
+                .addFilterBefore(getImageCodeFilter(), UsernamePasswordAuthenticationFilter.class)
                 // 指定身份认证方式为表单
                 .formLogin()
                 // 自定义转跳接口，当发现未登录，会转跳到此
@@ -115,7 +141,8 @@ public class BrowserSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
                 // 关闭 csrf 防护
-                .csrf().disable();
+                .csrf().disable()
+                .apply(emailCodeAuthenticationSecurityConfig);
     }
 
     @Bean

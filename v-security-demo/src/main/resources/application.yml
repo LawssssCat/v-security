@@ -34,7 +34,7 @@ v:
   security:
     browser:
       # 登录页面
-      loginPage: /login3.html
+      loginPage: /login4.html
       loginType: JSON
     code:
       image:
@@ -43,4 +43,5 @@ v:
         urls:
         # - /user
         # - /user/*
-
+      email:
+        urls:

@@ -1,7 +1,9 @@
-package cn.vshop.security.core.validate.code;
+package cn.vshop.security.core.validate.code.email;
 
 import cn.vshop.security.core.properties.SecurityProperties;
-import cn.vshop.security.core.validate.code.image.ImageCode;
+import cn.vshop.security.core.validate.code.ValidateCode;
+import cn.vshop.security.core.validate.code.ValidateCodeException;
+import cn.vshop.security.core.validate.code.ValidateCodeProcessor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -23,29 +25,19 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static com.mysql.jdbc.interceptors.SessionAssociationInterceptor.getSessionKey;
-
 /**
- * 图形校验码的过滤器
+ * 拦截邮箱认证请求，校验邮箱认证码是否正确
+ * <p>
+ * 每次请求只拦截一次 OncePerRequestFilter
+ * 需要初始化 InitializingBean
  *
  * @author alan smith
  * @version 1.0
- * @date 2020/4/5 11:39
+ * @date 2020/4/7 0:51
  */
 @Slf4j
 @Setter
-public class ValidateCodeFilter
-        // SpringMVC 提供的工具类，能确保此Filter每次请求只被调用一次
-        extends OncePerRequestFilter
-        // 在其他参数都加载完毕时，组装URLs的值
-        implements InitializingBean {
-
-    /**
-     * 要拦截的url
-     */
-    private Set<String> urls = new HashSet<>();
-
-    private SecurityProperties securityProperties;
+public class EmailCodeFilter extends OncePerRequestFilter implements InitializingBean {
 
     /**
      * spring的工具类，用来匹配Ant风格路径，如：“/user/*”
@@ -57,23 +49,41 @@ public class ValidateCodeFilter
      */
     private SessionStrategy sessionStrategy = new HttpSessionSessionStrategy();
 
-    // 我们前面自定义的验证失败处理器
+    /**
+     * 需要拦截的URL
+     * (默认添加 /authentication/email)
+     */
+    private Set<String> urls = new HashSet<>();
+
+    /**
+     * (需要手动注入)
+     */
+    private SecurityProperties securityProperties;
+
+    /**
+     * (需要手动注入)
+     */
     private AuthenticationFailureHandler authenticationFailureHandler;
 
+    /**
+     * 如果在Spring环境中，会在配置加载后执行
+     * （这里需要手动执行）
+     *
+     * @throws ServletException
+     */
     @Override
     public void afterPropertiesSet() throws ServletException {
         super.afterPropertiesSet();
-        String[] configUrls = securityProperties.getCode().getImage().getUrls();
+        String[] configUrls = securityProperties.getCode().getEmail().getUrls();
         for (String url : configUrls) {
             urls.add(url);
         }
-        urls.add("/authentication/form");
+        urls.add("/authentication/email");
+
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         // 循环判断是否执行过滤
         boolean action = false;
         for (String url : urls) {
@@ -83,34 +93,36 @@ public class ValidateCodeFilter
             }
         }
 
-        // 如果请求的是执行登录URL
+        // 如果是邮箱校验请求，执行邮箱校验逻辑
         if (action) {
-            // 尝试校验
             try {
-                // 封装成spring的request，方便后续操作
-                validate(new ServletWebRequest(request));
+                // 尝试校验
+                validate(new ServletWebRequest(request, response));
             } catch (ValidateCodeException e) {
-                // 捕获到自定义的验证码校验异常
-                // 用我们之前自定义的错误处理器，进行校验失败的处理
                 authenticationFailureHandler.onAuthenticationFailure(request, response, e);
                 return;
             }
         }
-        // 校验通过or不是登录请求
+
+        // 校验通过or不是email校验请求
         filterChain.doFilter(request, response);
     }
 
     /**
-     * 校验的逻辑
+     * 邮箱校验码存储在session中对应的key
+     */
+    private final static String SESSION_KEY_EMAIL = ValidateCodeProcessor.SESSION_KEY_PREFIX + "EMAIL";
+
+    /**
+     * 校验的逻辑，emailCode
      *
      * @param request
      */
     private void validate(ServletWebRequest request) throws ServletRequestBindingException {
-
-        // 从session中获取封装好的ImageCode
-        ImageCode codeInSession = (ImageCode) sessionStrategy.getAttribute(request, getCodeSessionKey());
-        // 从request中获取请求参数imageCode
-        String codeInRequest = ServletRequestUtils.getStringParameter(request.getRequest(), "imageCode");
+        // 从session中获取封装好的ValidateCode
+        ValidateCode codeInSession = (ValidateCode) sessionStrategy.getAttribute(request, SESSION_KEY_EMAIL);
+        // 从request中获取请求参数ValidateCode
+        String codeInRequest = ServletRequestUtils.getStringParameter(request.getRequest(), "emailCode");
         if (StringUtils.isBlank(codeInRequest)) {
             throw new ValidateCodeException("验证码的值不能为空");
         }
@@ -118,23 +130,12 @@ public class ValidateCodeFilter
             throw new ValidateCodeException("验证码不存在");
         }
         if (codeInSession.isExpired()) {
-            // 如果过期了，就移除验证码
-            sessionStrategy.removeAttribute(request, getCodeSessionKey());
-            // 然后再抛异常
+            sessionStrategy.removeAttribute(request, SESSION_KEY_EMAIL);
             throw new ValidateCodeException("验证码已过期");
         }
-        if (!StringUtils.equals(codeInSession.getCode(), codeInRequest)) {
+        if (!StringUtils.equalsIgnoreCase(codeInSession.getCode(), codeInRequest)) {
             throw new ValidateCodeException("验证码不匹配");
         }
-        sessionStrategy.removeAttribute(request, getCodeSessionKey());
+        sessionStrategy.removeAttribute(request, SESSION_KEY_EMAIL);
     }
-
-    /**
-     * 获取校验码存储在session中的key
-     * @return
-     */
-    private String getCodeSessionKey() {
-        return ValidateCodeProcessor.SESSION_KEY_PREFIX + "IMAGE";
-    }
-
 }

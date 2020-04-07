@@ -14,14 +14,16 @@ import org.springframework.stereotype.Component;
 import java.util.Collection;
 
 /**
+ * 根据用户名查找用户认证信息
+ *
  * @author alan smith
  * @version 1.0
  * @date 2020/4/3 17:05
  */
 @Slf4j
 // 注入 spring 容器
-@Component
-public class MyUserDetailsService implements UserDetailsService {
+@Component("usernameUserDetailsService")
+public class UsernameUserDetailsService implements UserDetailsService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -30,7 +32,7 @@ public class MyUserDetailsService implements UserDetailsService {
     //private DAO 对象 .... 这里就直接模拟了
 
     /**
-     * 根据用户名查找用户信息，作为登录的认证的依据
+     * 根据用户名查找用户认证信息，作为登录的认证的依据
      * 因为在spring环境中，查找信息的方式只需要注入即可
      *
      * @param username 用户要的认证的用户名
@@ -57,13 +59,13 @@ public class MyUserDetailsService implements UserDetailsService {
         return new User(
                 username,
                 password,
-                // 账号是否被删除
+                // 账号未被删除
                 true,
-                // 账号是否过期
+                // 账号未过期
                 true,
-                // 密码是否过期
+                // 密码未过期
                 true,
-                // 账号是否被冻结
+                // 账号未被冻结
                 true,
                 authorities);
     }
