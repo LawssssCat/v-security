@@ -1,6 +1,7 @@
 package cn.vshop.security.browser;
 
 import cn.vshop.security.browser.support.SimpleResponse;
+import cn.vshop.security.core.properties.SecurityConstants;
 import cn.vshop.security.core.properties.SecurityProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -48,7 +49,7 @@ public class BrowserSecurityController {
      * @param response 响应
      * @return 响应体
      */
-    @RequestMapping("/authentication/require")
+    @RequestMapping(SecurityConstants.DEFAULT_UNAUTHENTICATION_URL)
     // 就是 401
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     public SimpleResponse requireAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {

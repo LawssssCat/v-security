@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 
@@ -17,9 +16,11 @@ import java.util.Collection;
  * @author alan smith
  * @version 1.0
  * @date 2020/4/7 11:07
+ * @deprecated 未完成
  */
 @Slf4j
 //@Component("emailUserDetailsService")
+@Deprecated
 public class EmailUserDetailsService implements UserDetailsService {
 
     // 模拟注入DAO

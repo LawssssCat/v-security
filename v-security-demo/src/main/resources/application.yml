@@ -40,8 +40,6 @@ v:
       image:
         length: 6
         # 指定要进行验证码验证的url
-        urls:
+        # urls:
         # - /user
         # - /user/*
-      email:
-        urls:

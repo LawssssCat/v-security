@@ -1,5 +1,6 @@
 package cn.vshop.security.core.authentication.email;
 
+import cn.vshop.security.core.properties.SecurityConstants;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -36,7 +37,7 @@ public class EmailCodeAuthenticationFilter extends AbstractAuthenticationProcess
     public EmailCodeAuthenticationFilter() {
         super(new AntPathRequestMatcher(
                 // 匹配的请求
-                "/authentication/email", "POST"));
+                SecurityConstants.DEFAULT_LOGIN_PROCESSING_URL_EMAIL, "POST"));
     }
 
     // ~ Methods

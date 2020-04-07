@@ -1,71 +1,41 @@
 package cn.vshop.security.browser;
 
 import cn.vshop.security.core.authentication.email.EmailCodeAuthenticationSecurityConfig;
+import cn.vshop.security.core.properties.SecurityConstants;
 import cn.vshop.security.core.properties.SecurityProperties;
-import cn.vshop.security.core.validate.code.email.EmailCodeFilter;
-import cn.vshop.security.core.validate.code.image.ImageCodeFilter;
+import cn.vshop.security.core.validate.code.ValidateCodeSecurityConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.FilterChainProxy;
-import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
-import org.springframework.web.filter.DelegatingFilterProxy;
 
-import javax.servlet.Filter;
-import javax.servlet.ServletException;
 import javax.sql.DataSource;
 
 /**
- * {@link WebSecurityConfigurerAdapter}:
- * spring security 提供的 {@link WebSecurity} 适配器
- * 一个帮我们实现了大部分{@link WebSecurityConfigurer}接口的抽象类
- * <p>
- * 提供了可以重写的configure方法，在方法内可以装配自定义的Filter配置
- * 其指定的Filter会被生产为{@link FilterChainProxy}
- * 最终以{@link DelegatingFilterProxy}作为spring Security Filter Chain起作用
- * <p>
- * 即：其实现是用来配置spring Security Filter Chain的
+ * 自定义配置类{@link AbstractChannelSecurityConfig}的子类
  *
  * @author alan smith
  * @version 1.0
  * @date 2020/4/3 12:15
  */
 @Configuration
-public class BrowserSecurityConfig
-        extends WebSecurityConfigurerAdapter {
-
-    @Autowired
-    private EmailCodeAuthenticationSecurityConfig emailCodeAuthenticationSecurityConfig;
-
-    @Autowired
-    @Qualifier("myAuthenticationSuccessHandler")
-    private AuthenticationSuccessHandler authenticationSuccessHandler;
-
-    @Autowired
-    @Qualifier("myAuthenticationFailureHandler")
-    private AuthenticationFailureHandler authenticationFailureHandler;
+public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
 
     @Autowired
     private SecurityProperties securityProperties;
 
     @Autowired
-    private DataSource dataSource;
-
-    @Autowired
     @Qualifier("usernameUserDetailsService")
     private UserDetailsService userDetailsService;
+
+    @Autowired
+    private DataSource dataSource;
 
     /**
      * @return RememberMe 功能的 Repository
@@ -81,68 +51,51 @@ public class BrowserSecurityConfig
         return tokenRepository;
     }
 
-    /**
-     * @return 验证码校验过滤器
-     */
-    public Filter getImageCodeFilter() throws ServletException {
-        ImageCodeFilter filter = new ImageCodeFilter();
-        // 设置失败处理器
-        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        // 注入配置属性
-        filter.setSecurityProperties(securityProperties);
-        // 初始化
-        filter.afterPropertiesSet();
-        return filter;
-    }
+    @Autowired
+    private ValidateCodeSecurityConfig validateCodeSecurityConfig;
 
-    public Filter getEmailCodeFilter() throws ServletException {
-        EmailCodeFilter filter = new EmailCodeFilter();
-        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        filter.setSecurityProperties(securityProperties);
-        filter.afterPropertiesSet();
-        return filter;
-    }
+    @Autowired
+    private EmailCodeAuthenticationSecurityConfig emailCodeAuthenticationSecurityConfig;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        // 跟密码登录相关的配置
+        super.configure(http);
+        // 组装其他组件的配置
         http
-                // 把邮箱验证码过滤器放在用户名密码过滤器前
-                .addFilterBefore(getEmailCodeFilter(), UsernamePasswordAuthenticationFilter.class)
-                // 把图形验证码验证过滤器放在用户名密码过滤器前
-                .addFilterBefore(getImageCodeFilter(), UsernamePasswordAuthenticationFilter.class)
-                // 指定身份认证方式为表单
-                .formLogin()
-                // 自定义转跳接口，当发现未登录，会转跳到此
-                .loginPage("/authentication/require")
-                // 执行登录的URL
-                .loginProcessingUrl("/authentication/form")
-                // 自定义成功处理器
-                .successHandler(authenticationSuccessHandler)
-                // 自定义失败处理器
-                .failureHandler(authenticationFailureHandler)
-                .and()
-                // 记住我配置
-                .rememberMe()
+                // 校验码相关的配置
+                .apply(validateCodeSecurityConfig)
+
+                // 配置邮箱验证码认证部分配置
+                .and().apply(emailCodeAuthenticationSecurityConfig)
+
+                // 浏览器特有的配置，记住我配置
+                .and().rememberMe()
+                // token持久化
                 .tokenRepository(persistentTokenRepository())
+                // token有效时间
                 .tokenValiditySeconds(securityProperties.getBrowser().getRememberMeSeconds())
+                // token的用户信息服务类
                 .userDetailsService(userDetailsService)
-                .and()
-                // 并且认证请求
-                .authorizeRequests()
+
+                // 授权相关配置
+                .and().authorizeRequests()
                 // 设置，当访问到登录页面时，允许所有
                 .antMatchers(
                         // 自定义转跳接口，当发现未登录，会转跳到此
-                        "/authentication/require",
+                        SecurityConstants.DEFAULT_UNAUTHENTICATION_URL,
+                        // 邮箱认证
+                        SecurityConstants.DEFAULT_LOGIN_PROCESSING_URL_EMAIL,
                         // 登录表单页。自定义转跳接口发现配置为REDIRECT时，也会转跳至此
                         securityProperties.getBrowser().getLoginPage(),
-                        "/code/*"
+                        // 获取各种验证码的接口
+                        SecurityConstants.DEFAULT_VALIDATE_CODE_URL_PREFIX + "*"
                 ).permitAll()
                 // 全部请求，都需要认证
                 .anyRequest().authenticated()
-                .and()
+
                 // 关闭 csrf 防护
-                .csrf().disable()
-                .apply(emailCodeAuthenticationSecurityConfig);
+                .and().csrf().disable();
     }
 
     @Bean

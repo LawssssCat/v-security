@@ -11,6 +11,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +40,35 @@ public class EmailCodeAuthenticationSecurityConfig
     @Qualifier("usernameUserDetailsService")
     private UserDetailsService userDetailsService;
 
+    /**
+     * 构造邮箱验证码校验过滤器
+     *
+     * @param http
+     */
+    private EmailCodeAuthenticationFilter getEmailCodeAuthenticationFilter(HttpSecurity http) {
+        // 创建邮箱验证码校验过滤器
+        EmailCodeAuthenticationFilter filter = new EmailCodeAuthenticationFilter();
+        // 设置认证管理器
+        filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
+        // 注册successHandler
+        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
+        // 注册failureHandler
+        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
+        // 让认证过滤器有“记住我”功能
+        filter.setRememberMeServices(http.getSharedObject(RememberMeServices.class));
+        return filter;
+    }
+
+    /**
+     * 构造邮箱验证码的provider
+     *
+     * @return
+     */
+    private EmailCodeAuthenticationProvider emailCodeAuthenticationProvider() {
+        EmailCodeAuthenticationProvider provider = new EmailCodeAuthenticationProvider();
+        provider.setUserDetailsService(userDetailsService);
+        return provider;
+    }
 
     /**
      * 对FilterChain的配置
@@ -58,34 +88,5 @@ public class EmailCodeAuthenticationSecurityConfig
                 // 对应的这类的认证过滤器就应配置在其之后
                 .addFilterAfter(getEmailCodeAuthenticationFilter(http), UsernamePasswordAuthenticationFilter.class);
     }
-
-    /**
-     * 构造邮箱验证码校验过滤器
-     *
-     * @param http
-     */
-    private EmailCodeAuthenticationFilter getEmailCodeAuthenticationFilter(HttpSecurity http) {
-        // 创建邮箱验证码校验过滤器
-        EmailCodeAuthenticationFilter filter = new EmailCodeAuthenticationFilter();
-        // 设置认证管理器
-        filter.setAuthenticationManager(http.getSharedObject(AuthenticationManager.class));
-        // 注册successHandler
-        filter.setAuthenticationSuccessHandler(authenticationSuccessHandler);
-        // 注册failureHandler
-        filter.setAuthenticationFailureHandler(authenticationFailureHandler);
-        return filter;
-    }
-
-    /**
-     * 构造邮箱验证码的provider
-     *
-     * @return
-     */
-    private EmailCodeAuthenticationProvider emailCodeAuthenticationProvider() {
-        EmailCodeAuthenticationProvider provider = new EmailCodeAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        return provider;
-    }
-
 
 }

@@ -1,6 +1,8 @@
 package cn.vshop.security.core.validate.code.impl;
 
+import cn.vshop.security.core.properties.SecurityConstants;
 import cn.vshop.security.core.validate.code.ValidateCode;
+import cn.vshop.security.core.validate.code.ValidateCodeException;
 import cn.vshop.security.core.validate.code.ValidateCodeGenerator;
 import cn.vshop.security.core.validate.code.ValidateCodeProcessor;
 import org.apache.commons.lang.StringUtils;
@@ -56,18 +58,22 @@ public abstract class AbstractValidateCodeProcessor<C extends ValidateCode> impl
         // 从请求中获取校验码类型
         String type = getProcessorType(request);
         // 根据type取出校验码生成器
-        ValidateCodeGenerator validateCodeGenerator = validateCodeGenerators.get(type + "CodeGenerator");
-        return (C) validateCodeGenerator.generate(request);
+        for (String beanName : validateCodeGenerators.keySet()) {
+            if (StringUtils.startsWith(beanName, type)) {
+                return (C) validateCodeGenerators.get(beanName).generate(request);
+            }
+        }
+        throw new ValidateCodeException("不支持生成" + type + "类型的验证码");
     }
 
     /**
-     * 根据请求的url获取校验码的类型
+     * 根据请求的url，获取校验码的类型
      *
      * @param request
      * @return
      */
     private String getProcessorType(ServletWebRequest request) {
-        return StringUtils.substringAfter(request.getRequest().getRequestURI(), "/code/");
+        return StringUtils.substringAfter(request.getRequest().getRequestURI(), SecurityConstants.DEFAULT_VALIDATE_CODE_URL_PREFIX);
     }
 
     /**
@@ -79,6 +85,7 @@ public abstract class AbstractValidateCodeProcessor<C extends ValidateCode> impl
     private void save(ServletWebRequest request, C validateCode) {
         sessionStrategy.setAttribute(request, SESSION_KEY_PREFIX + getProcessorType(request).toUpperCase(), validateCode);
     }
+
 
     /**
      * 发送校验码，由子类实现

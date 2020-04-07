@@ -2,13 +2,19 @@ package cn.vshop.security.core.validate.code;
 
 import cn.vshop.security.core.validate.code.email.DefaultEmailCodeSender;
 import cn.vshop.security.core.validate.code.email.EmailCodeGenerator;
-import cn.vshop.security.core.validate.code.email.EmailCodeProcessor;
 import cn.vshop.security.core.validate.code.email.EmailCodeSender;
 import cn.vshop.security.core.validate.code.image.ImageCodeGenerator;
-import cn.vshop.security.core.validate.code.image.ImageCodeProcessor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.Filter;
 
 /**
  * 校验码生成逻辑的配置类
@@ -18,13 +24,14 @@ import org.springframework.context.annotation.Configuration;
  * @date 2020/4/5 17:39
  */
 @Configuration
-public class ValidateCodeBeanConfig {
+public class ValidateCodeSecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
     /*---------------------------------------------------------------------------------------*/
     /*--------                      i m a g e                                        --------*/
     /*---------------------------------------------------------------------------------------*/
 
     /**
+     * 定义图片校验码的生成方式
      * 如果用户没有注入名字为imageCodeGenerator的bean，那么就使用默认的
      *
      * @return 默认的 ValidateCodeGenerator 实现
@@ -35,32 +42,42 @@ public class ValidateCodeBeanConfig {
         return new ImageCodeGenerator();
     }
 
-    @Bean("imageCodeProcessor")
-    @ConditionalOnMissingBean(name = "imageCodeProcessor")
-    public ImageCodeProcessor imageCodeProcessor() {
-        return new ImageCodeProcessor();
-    }
-
-
     /*---------------------------------------------------------------------------------------*/
     /*--------                      e m a i l                                        --------*/
     /*---------------------------------------------------------------------------------------*/
 
+    /**
+     * 定义邮箱校验码的生成方式
+     */
     @Bean("emailCodeGenerator")
     @ConditionalOnMissingBean(name = "emailCodeGenerator")
     public ValidateCodeGenerator emailCodeGenerator() {
         return new EmailCodeGenerator();
     }
 
+    /**
+     * 定义邮箱校验码的发送方式
+     */
     @Bean("emailCodeSender")
     @ConditionalOnMissingBean(name = "emailCodeSender")
     public EmailCodeSender emailCodeSender() {
         return new DefaultEmailCodeSender();
     }
 
-    @Bean("emailCodeProcessor")
-    @ConditionalOnMissingBean(name = "emailCodeProcessor")
-    public EmailCodeProcessor emailCodeProcessor() {
-        return new EmailCodeProcessor();
+
+    /*--------------------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------------------*/
+    /*--------------------------------------------------------------------------------------*/
+
+    @Autowired
+    @Qualifier("validateCodeFilter")
+    private Filter validateCodeFilter;
+
+
+    @Override
+    public void configure(HttpSecurity http) throws Exception {
+        // 把验证码验证过滤器放在用户名密码过滤器前
+        http.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class);
     }
+
 }
