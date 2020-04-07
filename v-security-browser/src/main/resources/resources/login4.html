@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<h1>标准登录页面</h1>
+<h2>图片验证码登录</h2>
+<form method="post" action="/authentication/form">
+    username: <input type="text" name="username"value="aaa"><br>
+    pawssword: <input type="text" name="password" value="123456"><br>
+    图形验证码：<input type="text" name="imageCode"> <img src="/code/image?width=600"><br>
+    <input type="checkbox" value="true" name="remember-me" checked="checked">记住我<br>
+    <input type="submit" value="登录">
+</form>
+<h2>邮箱登录</h2>
+<form id="loginForm" method="post" action="/authentication/email">
+    邮箱: <input type="text" name="email" value="1191693505@qq.com"><br>
+    验证码:<input type="text" name="emailCode">
+    <button onclick="sendCode(this)">发送验证码</button>
+    <br>
+    <input type="checkbox" value="true" name="remember-me" checked="checked">记住我<br>
+    <input type="submit" value="登录">
+</form>
+
+<script>
+    let form = new FormData(document.getElementById("loginForm"));
+    let content = "发送验证码"
+    function sendCode(o) {
+        let xhr = new XMLHttpRequest();
+        xhr.open('GET', path());
+        xhr.send(null);
+        xhr.onload = function () {
+            alert("验证码发送成功!");
+        }
+        content = o.innerHTML;
+        time(o);
+    }
+
+    function path() {
+        let email = form.get("email");
+        return "/code/email?email=" + email;
+    }
+
+    let wait = 60;
+    function time(o) {
+        if (wait == 0) {
+            o.removeAttribute("disabled");
+            o.innerHTML = content;
+            wait = 60;
+        } else {
+            debugger
+            o.setAttribute("disabled", true);
+            o.innerHTML = wait + "秒后可以重新发送";
+            wait--;
+            setTimeout(() => {
+                time(o)
+            }, 1000);
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -30,3 +30,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### 私人文档
+application-dev.*

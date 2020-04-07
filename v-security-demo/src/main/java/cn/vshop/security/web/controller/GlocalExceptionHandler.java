@@ -25,9 +25,9 @@ import java.util.Map;
  */
 @ControllerAdvice
 @Controller // 使ErrorController接口生效，从而让 404 错误被我们捕获
-public class GlocalExceptionHandler implements ErrorController {
+public class GlocalExceptionHandler { //implements ErrorController {
 
-    private final static String PAGE_NOT_FOUND = "/error";
+    /*private final static String PAGE_NOT_FOUND = "/error";
 
     @Override
     public String getErrorPath() {
@@ -37,7 +37,7 @@ public class GlocalExceptionHandler implements ErrorController {
     @RequestMapping(PAGE_NOT_FOUND)
     public void toCustomHandler() {
         throw new ServiceException("Page not found");
-    }
+    }*/
 
     /**
      * 拦截并处理 ServiceException 及其子类异常
