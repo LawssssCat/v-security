@@ -1,14 +1,16 @@
-package cn.vshop.security.browser;
+package cn.vshop.security.auth;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.social.security.SocialUser;
+import org.springframework.social.security.SocialUserDetails;
+import org.springframework.social.security.SocialUserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -22,15 +24,18 @@ import java.util.Collection;
  */
 @Slf4j
 // 注入 spring 容器
-@Component("usernameUserDetailsService")
-public class UsernameUserDetailsService implements UserDetailsService {
+@Component//("myUserDetailsService")
+public class MyUserDetailsService
+        // 表单认证时候的 UserDetails Service
+        implements UserDetailsService,
+        // 社交认证时候用的 UserDetails Service
+        SocialUserDetailsService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
     // @Autowired
     //private DAO 对象 .... 这里就直接模拟了
-
     /**
      * 根据用户名查找用户认证信息，作为登录的认证的依据
      * 因为在spring环境中，查找信息的方式只需要注入即可
@@ -41,8 +46,31 @@ public class UsernameUserDetailsService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info("登录用户名：{}", username);
+        log.info("表单登录用户名：{}", username);
+        return buildUserByUsername(username);
+    }
 
+
+    /**
+     * Social认证的子类
+     *
+     * @param userId 用户名
+     * @return UserDetails的子类，在Social授权下使用
+     * @throws UsernameNotFoundException
+     */
+    @Override
+    public SocialUserDetails loadUserByUserId(String userId) throws UsernameNotFoundException {
+        log.info("Social登录用户名：{}", userId);
+        return buildUserByUsername(userId);
+    }
+
+    /**
+     * 根据用户名从数据库查找用户信息
+     *
+     * @param username 用户名
+     * @return
+     */
+    private SocialUser buildUserByUsername(String username) {
         // 模拟：查出来的用户密码
         String password = passwordEncoder.encode("123456");
         log.info("数据库密码：{}", password);
@@ -56,7 +84,7 @@ public class UsernameUserDetailsService implements UserDetailsService {
 
         // 返回UserDetails接口
         // User是SpringSecurity提供的UserDetails接口实现
-        return new User(
+        return new SocialUser(
                 username,
                 password,
                 // 账号未被删除

@@ -4,6 +4,7 @@ import cn.vshop.security.core.validate.code.email.DefaultEmailCodeSender;
 import cn.vshop.security.core.validate.code.email.EmailCodeGenerator;
 import cn.vshop.security.core.validate.code.email.EmailCodeSender;
 import cn.vshop.security.core.validate.code.image.ImageCodeGenerator;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -23,6 +24,7 @@ import javax.servlet.Filter;
  * @version 1.0
  * @date 2020/4/5 17:39
  */
+@Slf4j
 @Configuration
 public class ValidateCodeSecurityConfig extends SecurityConfigurerAdapter<DefaultSecurityFilterChain, HttpSecurity> {
 
@@ -76,6 +78,7 @@ public class ValidateCodeSecurityConfig extends SecurityConfigurerAdapter<Defaul
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
+        log.info("添加验证码校验过滤器");
         // 把验证码验证过滤器放在用户名密码过滤器前
         http.addFilterBefore(validateCodeFilter, UsernamePasswordAuthenticationFilter.class);
     }

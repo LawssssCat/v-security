@@ -37,7 +37,7 @@ public class EmailCodeAuthenticationSecurityConfig
     private AuthenticationFailureHandler authenticationFailureHandler;
 
     @Autowired
-    @Qualifier("usernameUserDetailsService")
+    //@Qualifier("usernameUserDetailsService")
     private UserDetailsService userDetailsService;
 
     /**

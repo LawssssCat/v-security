@@ -34,7 +34,7 @@ v:
   security:
     browser:
       # 登录页面
-      loginPage: /login4.html
+      loginPage: /login5.html
       loginType: JSON
     code:
       image:
@@ -43,3 +43,15 @@ v:
         # urls:
         # - /user
         # - /user/*
+    social:
+      filterProcessesUrl: /callback
+      qq:
+        # 服务供应商id
+        providerId: qq/login
+        # 应用id
+        appId: xxx
+        # 应用密码
+        appSecret: xxx
+
+server:
+  port: 80

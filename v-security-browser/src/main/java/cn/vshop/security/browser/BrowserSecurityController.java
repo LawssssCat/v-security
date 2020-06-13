@@ -50,7 +50,7 @@ public class BrowserSecurityController {
      * @return 响应体
      */
     @RequestMapping(SecurityConstants.DEFAULT_UNAUTHENTICATION_URL)
-    // 就是 401
+    // 状态码：401
     @ResponseStatus(code = HttpStatus.UNAUTHORIZED)
     public SimpleResponse requireAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
 

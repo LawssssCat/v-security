@@ -1,10 +1,10 @@
-package cn.vshop.security.core.properties;
+package cn.vshop.security.core.properties.modules;
 
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * 图形验证码
+ * 邮箱验证码
  *
  * @author alan smith
  * @version 1.0
@@ -12,17 +12,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class ImageCodeProperties {
-
-    /**
-     * 验证码宽
-     */
-    private int width = 67;
-
-    /**
-     * 验证码高
-     */
-    private int height = 23;
+public class EmailCodeProperties {
 
     /**
      * 验证码个数

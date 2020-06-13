@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.social.security.SpringSocialConfigurer;
 
 import javax.sql.DataSource;
 
@@ -31,7 +32,7 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
     private SecurityProperties securityProperties;
 
     @Autowired
-    @Qualifier("usernameUserDetailsService")
+    //@Qualifier("myUserDetailsService")
     private UserDetailsService userDetailsService;
 
     @Autowired
@@ -57,6 +58,9 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
     @Autowired
     private EmailCodeAuthenticationSecurityConfig emailCodeAuthenticationSecurityConfig;
 
+    @Autowired
+    private SpringSocialConfigurer vSocialSecurityConfig;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         // 跟密码登录相关的配置
@@ -65,6 +69,9 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
         http
                 // 校验码相关的配置
                 .apply(validateCodeSecurityConfig)
+
+                // 加入social的过滤器进入SpringSecurity的过滤链中
+                .and().apply(vSocialSecurityConfig)
 
                 // 配置邮箱验证码认证部分配置
                 .and().apply(emailCodeAuthenticationSecurityConfig)
@@ -98,6 +105,11 @@ public class BrowserSecurityConfig extends AbstractChannelSecurityConfig {
                 .and().csrf().disable();
     }
 
+    /**
+     * Spring Security加密/解密工具类
+     *
+     * @return
+     */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();

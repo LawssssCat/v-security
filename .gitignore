@@ -32,4 +32,4 @@ build/
 .vscode/
 
 ### 私人文档
-application-dev.*
+application-dev.yml

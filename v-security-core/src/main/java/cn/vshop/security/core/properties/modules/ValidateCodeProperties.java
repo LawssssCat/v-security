@@ -1,4 +1,4 @@
-package cn.vshop.security.core.properties;
+package cn.vshop.security.core.properties.modules;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -1,6 +1,7 @@
-package cn.vshop.security.core.properties;
+package cn.vshop.security.core.properties.modules;
 
 
+import cn.vshop.security.core.properties.LoginType;
 import lombok.Getter;
 import lombok.Setter;
 
